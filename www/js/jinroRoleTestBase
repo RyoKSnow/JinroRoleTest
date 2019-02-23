@@ -1,0 +1,79 @@
+// 質問番号
+var no = 0;
+// 正解数
+var score = 0;
+// 質問リスト
+var wordList = [
+  {
+    japanese: "質問1",
+    english: "狐"
+  },
+  {
+    japanese: "人狼を知ってる　占われたら人間",
+    english: "狂信者"
+  }
+];
+//協調性
+var kyotyoseiPt = 0;
+//意志力
+var ishiryokuPt = 0;
+//ポーカフェイス
+var porkerfacePt = 0;
+
+// 問題を表示する
+function showQuestion() {
+  if(no < wordList.length){
+    //次の問題がある場合は表示する
+    document.getElementById("question").innerHTML = wordList[no].japanese;
+  }else{
+    //全問終了したら、成績を発表する。
+    document.getElementById("question").innerHTML = score + "/" + wordList.length;
+    document.getElementById("answerForm").style.display = "none";
+    if(score == wordList.length){
+      //全問正解の場合
+      document.getElementById("resultMessage").innerHTML = "全問正解だよ～！"
+      document.getElementById("resultImage").src = "gold.png";
+    } else if(score >= wordList.length * 0.6){
+      //６割以上正解した場合
+      document.getElementById("resultMessage").innerHTML = "まぁまぁだね！"
+      document.getElementById("resultImage").src = "silver.png";
+    } else {
+      document.getElementById("resultMessage").innerHTML = "まだまだだね！";
+      document.getElementById("resultImage").src = "bronze.png";
+    }
+  }
+}
+
+// 入力された回答の正誤判定を行う
+function judge() {
+  var answer = document.getElementById("answer").value;
+  if(answer == wordList[no].english){
+    alert("正解です！");
+    score++;
+  } else {
+    alert("残念！不正解です。");
+  }
+  no++;
+  showQuestion();
+  var answer = document.getElementById("answer").value = "";
+}
+
+//陣営判別メソッド
+function teamCheck(){
+  //協調性を取得
+  kyotyoseiPt = document.getElementById("kyotyoseiSelect").value;
+	//意志力を取得
+  ishiPt = document.getElementById("ishiSelect").value;
+	//ポーカーフェイスを取得
+  porkerfacePt = document.getElementById("porkerfaceSelect").value;
+	
+  //陣営判別計算
+  //村陣営計算(協調性×(2) / 意志力×(1) / ポーカフェイス×(-2))
+  var humanPt = parseInt(kyotyoseiPt)*2 + parseInt(ishiPt)*1 + parseInt(porkerfacePt)*(-2);
+  //人狼陣営計算(協調性×(1) / 意志力×(2) / ポーカフェイス×(2))
+  var jinroPt = parseInt(kyotyoseiPt)*1 + parseInt(ishiPt)*2 + parseInt(porkerfacePt)*2;
+  //狐陣営計算(協調性×(-1) / 意志力×(-1) / ポーカフェイス×(1))
+  var foxPt = parseInt(kyotyoseiPt)*(-1) + parseInt(ishiPt)*(-1) + parseInt(porkerfacePt)*(1);
+
+  document.getElementById("teamShow").textContent = "村陣営Pt： " + humanPt + " / 人狼陣営Pt： " + jinroPt + " / 狐陣営Pt： " + foxPt;
+}
