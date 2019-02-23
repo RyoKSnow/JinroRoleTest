@@ -7,81 +7,41 @@
     <script src="components/loader.js"></script>
     <link rel="stylesheet" href="components/loader.css">
     <link rel="stylesheet" href="css/style.css">
-    <script>
-    	// 問題番号
-    	var no = 0;
-    	// 正解数
-    	var score = 0;
-    	// 単語リスト
-    	var wordList = [
-    		{
-    			japanese: "占われたら死ぬ　第３陣営",
-    			english: "狐"
-    		},
-    		{
-    			japanese: "人狼を知ってる　占われたら人間",
-    			english: "狂信者"
-    		},
-    		{
-    			japanese: "死んだ人の役職が分かる",
-    			english: "大霊能"
-    		},
-    		{
-    			japanese: "意思疎通ができる村陣営",
-    			english: "共有者"
-    		},
-    		{
-    			japanese: "選択した陣営に所属できる",
-    			english: "ペテン師"
-    		}
-    	];
-    	
-    	// 問題を表示する
-    	function showQuestion() {
-        if(no < wordList.length){
-          //次の問題がある場合は表示する
-          document.getElementById("question").innerHTML = wordList[no].japanese;
-        }else{
-          //全問終了したら、成績を発表する。
-          document.getElementById("question").innerHTML = score + "/" + wordList.length;
-          document.getElementById("answerForm").style.display = "none";
-          if(score == wordList.length){
-            //全問正解の場合
-            document.getElementById("resultMessage").innerHTML = "全問正解だよ～！"
-            document.getElementById("resultImage").src = "gold.png";
-          } else if(score >= wordList.length * 0.6){
-            //６割以上正解した場合
-            document.getElementById("resultMessage").innerHTML = "まぁまぁだね！"
-            document.getElementById("resultImage").src = "silver.png";
-          } else {
-            document.getElementById("resultMessage").innerHTML = "まだまだだね！";
-            document.getElementById("resultImage").src = "bronze.png";
-          }
-        }
-    	}
-    	
-    	// 入力された回答の正誤判定を行う
-    	function judge() {
-        var answer = document.getElementById("answer").value;
-        if(answer == wordList[no].english){
-          alert("正解です！");
-          score++;
-        } else {
-          alert("残念！不正解です。");
-        }
-        no++;
-        showQuestion();
-        var answer = document.getElementById("answer").value = "";
-    	}
-    </script>
+    <script src="js/jinroRoleTestBase"></script>
 </head>
 <body onload="showQuestion()">
-	<h1 id="title">Question</h1>
+	<h1 id="title">人狼役職診断</h1>
 	<div id="question"></div>
 	<div id="answerForm">
 		<input type="text" id="answer" placeholder="人狼村での答えを入力">
 		<button onclick="judge()">OK</button>
 	</div>
+  <p>協調性</p>
+	<select id="kyotyoseiSelect">
+      <option value=-2>-2</option>
+	    <option value=-1>-1</option>
+	    <option value=0>0</option>
+	    <option value=1>1</option>
+      <option value=2>2</option>
+	</select>
+  <p>意志力</p>
+	<select id="ishiSelect">
+      <option value=-2>-2</option>
+	    <option value=-1>-1</option>
+	    <option value=0>0</option>
+	    <option value=1>1</option>
+      <option value=2>2</option>
+	</select>
+  <p>ポーカフェイス</p>
+	<select id="porkerfaceSelect">
+      <option value=-2>-2</option>
+	    <option value=-1>-1</option>
+	    <option value=0>0</option>
+	    <option value=1>1</option>
+      <option value=2>2</option>
+	</select>
+<input type="button" value="パラメータ送信" onclick="teamCheck()"/>
+<p id="teamShow"></p>
 	<p id="resultMessage"></p>
 	<img id="resultImage" src="">
 </body>
