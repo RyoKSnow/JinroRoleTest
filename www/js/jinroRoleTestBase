@@ -1,110 +1,118 @@
 // 質問番号
 var questionNo = 0;
 // 質問リスト
-var questionList = [
-  {
-    question: "性格は？",
-    answerList: ["きつい","優しい","のんびり"]
-  },
-  {
-    question: "人狼を知ってる占われたら人間",
-    answerList: ["狂信者","狂人","予言"]
-  }
-];
+var questionList = getDataFromCsv();
 //協調性
-var kyotyoseiPt = 0;
+var kyotyoPt = 0;
 //意志力
-var ishiryokuPt = 0;
+var ishiPt = 0;
 //ポーカフェイス
-var porkerfacePt = 0;
+var pokerPt = 0;
 
-//CSV読み込み
-function loadCSV() {
-    // 読み込んだデータを1行ずつ格納する配列
-    var allData = [];
- 
-    // XMLHttpRequestの用意
-    var request = new XMLHttpRequest();
-    request.open("get", "data/questionList.csv", false);
-    request.send(null);
- 
-    // 読み込んだCSVデータ
-    var csvData = request.responseText;
- 
-    // CSVの全行を取得(改行ごと)
-    var lines = csvData.split("\n");
- 
-    for (var i = 0; i < lines.length; i++) {
-        // 1行ごとの処理
-        var wordSet = lines[i].split(",");
- 
-        var wordData = {
-            question: wordSet[0],
-            answerList: [wordSet[1],wordSet[2],wordSet[3]]
-        };
- 
-        allData.push(wordData);
-    } 
-    return allData;
+//CSVを読み込んで配列データとして返す
+function getDataFromCsv() {
+  var allData = [];// 読み込んだデータを1行ずつ格納する配列 
+  var request = new XMLHttpRequest();
+  request.open("get", "data/questionList.csv", false);
+  request.send(null);
+
+  var csvData = request.responseText;// 読み込んだCSVデータ
+  var lines = csvData.split("\n");// CSVの全行を取得(改行ごとの配列データ)
+
+  for (var i = 1; i < lines.length; i++) {
+    //1行ごとに区切り文字ごとで配列データを取得(1行目はタイトルなのでスキップ)
+    var wordSet = lines[i].split("|");
+    //オブジェクトにデータを格納
+    var wordData = {
+      question: wordSet[0],
+      answerList: [wordSet[1],wordSet[2],wordSet[3]],
+      parameterList: {
+        0:{kyotyo:1,
+          ishi:1,
+          poker:1
+          },
+        1:{kyotyo:-1,
+          ishi:-1,
+          poker:-1
+          },
+        2:{kyotyo:2,
+          ishi:2,
+          poker:2
+        }
+      }
+    };
+    //パラメータリストをCSVから変換
+    //for (var j = 4; j < 7; j++) {
+    //  var param = wordSet[j].split(",");
+    //  for (var k = 0; k < param.length;k++) {
+    //    var paramCore = param[k].split(":");
+    //    var paramKey = paramCore[0];
+    //    var paramValue = paramCore[1];
+    //    wordData.parameterList[paramKey]
+    //  }
+    //}
+    allData.push(wordData);//配列にオブジェクトを格納
+  } 
+  return allData;
 }
 
-//ラジオボタン選択テスト
-function getRadioSelect() {
-  for(i=0;i<ansForm.radio.length;i++) {
-    if(ansForm.radio[i].checked == true) {
-      var hoge = ansForm.radio[i].value;
-      console.log(hoge + " :is selected");
-    }
-  }
-}
-
-//配列から配列要素をリストとしてフォームを作成する
-function createSelectList() {
-
-  var qaList = loadCSV();//CSVで読み込んだ質問と回答の配列
-  html = "";
-  //質問リスト分繰り返し
-  for(i=0;i < qaList.length;i++) {
-    var list = qaList[i].answerList;
-    //回答リスト分繰り返し
-    for(j=0;j < list.length;j++) {
-      answerStr = list[j];
-      //埋め込むhtml分を作成
-      html += "<input type='radio' name='radio' value='" + answerStr +"'/>" + answerStr +"<br>";
-    }
-  }
-  document.getElementById("selectAnswerForm").innerHTML = html;
-}
-
-// 問題を表示する
+// 質問と回答を表示する
 function showQuestion() {
   if(questionNo < questionList.length){
     //次の問題がある場合は表示する
     document.getElementById("question").innerHTML = questionList[questionNo].question;
-  }else{
-    //全問終了したら、成績を発表する。
-    document.getElementById("question").innerHTML = "hoge";
-    document.getElementById("answerForm").style.display = "none";
+    answerHtml = "";//回答リスト表示用html
+    var list = questionList[questionNo].answerList;//回答リスト用配列
+    //回答リスト分繰り返し
+    for (var i=0;i < list.length;i++) {
+      var answerStr = list[i];
+      //埋め込むhtml分を作成
+      var valueNumber = i+1;
+      answerHtml += "<input type='radio' name='radio' value='" + valueNumber +"'/>" + answerStr +"<br>";
+    }
+    //Htmlに回答リストを埋め込む
+    document.getElementById("selectAnswerForm").innerHTML = answerHtml;
+    //パラメータを表示
+    document.getElementById("parameterShow").textContent = "協調性： " + kyotyoPt + " / 意志力： " + ishiPt + " / ポーカフェイス： " + pokerPt;
+  } else {
+    document.getElementById("question").innerHTML = "しゅーりょー";
+    document.getElementById("selectAnswerForm").style.display = "none";
+    document.getElementById("answerButton").style.display = "none";
   }
-  createSelectList();
 }
 
-//陣営判別メソッド
-function teamCheck(){
-  //協調性を取得
-  kyotyoseiPt = document.getElementById("kyotyoseiSelect").value;
-	//意志力を取得
-  ishiPt = document.getElementById("ishiSelect").value;
-	//ポーカーフェイスを取得
-  porkerfacePt = document.getElementById("porkerfaceSelect").value;
-	
-  //陣営判別計算
-  //村陣営計算(協調性×(2) / 意志力×(1) / ポーカフェイス×(-2))
-  var humanPt = parseInt(kyotyoseiPt)*2 + parseInt(ishiPt)*1 + parseInt(porkerfacePt)*(-2);
-  //人狼陣営計算(協調性×(1) / 意志力×(2) / ポーカフェイス×(2))
-  var jinroPt = parseInt(kyotyoseiPt)*1 + parseInt(ishiPt)*2 + parseInt(porkerfacePt)*2;
-  //狐陣営計算(協調性×(-1) / 意志力×(-1) / ポーカフェイス×(1))
-  var foxPt = parseInt(kyotyoseiPt)*(-1) + parseInt(ishiPt)*(-1) + parseInt(porkerfacePt)*(1);
+//パラメータにポイントを加減し、次の質問を表示する
+function nextQuestion() {
+  var selectNumber = "";//選択した番号
+  for(i=0;i<answerForm.radio.length;i++) {
+    if(answerForm.radio[i].checked == true) {
+      selectNumber = answerForm.radio[i].value;
+    }
+  }
+  updateParameter(selectNumber);//パラメータを更新
+  questionNo++;//質問番号を次の番号へ
+  showQuestion();
+}
 
-  document.getElementById("teamShow").textContent = "村陣営Pt： " + humanPt + " / 人狼陣営Pt： " + jinroPt + " / 狐陣営Pt： " + foxPt;
+//パラメータを更新する
+function updateParameter(number) {
+  //選択した回答のパラメータ加減用配列を取得
+  var parameterList = questionList[questionNo].parameterList;
+  var parameter = parameterList[parseInt(number)-1];
+  console.log(parameter);
+  //パラメータを加減する
+  for(var key in parameter) {
+    if(JSON.stringify(key) == "kyotyo") {
+      //協調性
+      kyotyoPt += parseInt(parameter.key);
+    } else if (JSON.stringify(key) == "ishi") {
+      //意志力
+      ishiPt += parseInt(parameter.key);
+    } else if (JSON.stringify(key) == "poker") {
+      //ポーカフェイス
+      pokerPt += parseInt(parameter.key);
+    } else {
+      console.log("CSVのパラメータが不正");
+    }
+  }
 }
