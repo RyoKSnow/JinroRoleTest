@@ -12,6 +12,9 @@
 <body onload="showQuestion()">
 	<h1 id="title">人狼役職診断</h1>
 	<div id="question"></div>
+  <form id="selectAnswerForm" name="ansForm">
+  </form>
+  <input type="button" value="radioTest" onclick="getRadioSelect()">
 	<div id="answerForm">
 		<input type="text" id="answer" placeholder="人狼村での答えを入力">
 		<button onclick="judge()">OK</button>
@@ -42,7 +45,5 @@
 	</select>
 <input type="button" value="パラメータ送信" onclick="teamCheck()"/>
 <p id="teamShow"></p>
-	<p id="resultMessage"></p>
-	<img id="resultImage" src="">
 </body>
 </html>

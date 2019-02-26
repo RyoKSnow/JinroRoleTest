@@ -1,16 +1,14 @@
 // 質問番号
-var no = 0;
-// 正解数
-var score = 0;
+var questionNo = 0;
 // 質問リスト
-var wordList = [
+var questionList = [
   {
-    japanese: "質問1",
-    english: "狐"
+    question: "性格は？",
+    answerList: ["きつい","優しい","のんびり"]
   },
   {
-    japanese: "人狼を知ってる　占われたら人間",
-    english: "狂信者"
+    question: "人狼を知ってる占われたら人間",
+    answerList: ["狂信者","狂人","予言"]
   }
 ];
 //協調性
@@ -20,42 +18,75 @@ var ishiryokuPt = 0;
 //ポーカフェイス
 var porkerfacePt = 0;
 
-// 問題を表示する
-function showQuestion() {
-  if(no < wordList.length){
-    //次の問題がある場合は表示する
-    document.getElementById("question").innerHTML = wordList[no].japanese;
-  }else{
-    //全問終了したら、成績を発表する。
-    document.getElementById("question").innerHTML = score + "/" + wordList.length;
-    document.getElementById("answerForm").style.display = "none";
-    if(score == wordList.length){
-      //全問正解の場合
-      document.getElementById("resultMessage").innerHTML = "全問正解だよ～！"
-      document.getElementById("resultImage").src = "gold.png";
-    } else if(score >= wordList.length * 0.6){
-      //６割以上正解した場合
-      document.getElementById("resultMessage").innerHTML = "まぁまぁだね！"
-      document.getElementById("resultImage").src = "silver.png";
-    } else {
-      document.getElementById("resultMessage").innerHTML = "まだまだだね！";
-      document.getElementById("resultImage").src = "bronze.png";
+//CSV読み込み
+function loadCSV() {
+    // 読み込んだデータを1行ずつ格納する配列
+    var allData = [];
+ 
+    // XMLHttpRequestの用意
+    var request = new XMLHttpRequest();
+    request.open("get", "data/questionList.csv", false);
+    request.send(null);
+ 
+    // 読み込んだCSVデータ
+    var csvData = request.responseText;
+ 
+    // CSVの全行を取得(改行ごと)
+    var lines = csvData.split("\n");
+ 
+    for (var i = 0; i < lines.length; i++) {
+        // 1行ごとの処理
+        var wordSet = lines[i].split(",");
+ 
+        var wordData = {
+            question: wordSet[0],
+            answerList: [wordSet[1],wordSet[2],wordSet[3]]
+        };
+ 
+        allData.push(wordData);
+    } 
+    return allData;
+}
+
+//ラジオボタン選択テスト
+function getRadioSelect() {
+  for(i=0;i<ansForm.radio.length;i++) {
+    if(ansForm.radio[i].checked == true) {
+      var hoge = ansForm.radio[i].value;
+      console.log(hoge + " :is selected");
     }
   }
 }
 
-// 入力された回答の正誤判定を行う
-function judge() {
-  var answer = document.getElementById("answer").value;
-  if(answer == wordList[no].english){
-    alert("正解です！");
-    score++;
-  } else {
-    alert("残念！不正解です。");
+//配列から配列要素をリストとしてフォームを作成する
+function createSelectList() {
+
+  var qaList = loadCSV();//CSVで読み込んだ質問と回答の配列
+  html = "";
+  //質問リスト分繰り返し
+  for(i=0;i < qaList.length;i++) {
+    var list = qaList[i].answerList;
+    //回答リスト分繰り返し
+    for(j=0;j < list.length;j++) {
+      answerStr = list[j];
+      //埋め込むhtml分を作成
+      html += "<input type='radio' name='radio' value='" + answerStr +"'/>" + answerStr +"<br>";
+    }
   }
-  no++;
-  showQuestion();
-  var answer = document.getElementById("answer").value = "";
+  document.getElementById("selectAnswerForm").innerHTML = html;
+}
+
+// 問題を表示する
+function showQuestion() {
+  if(questionNo < questionList.length){
+    //次の問題がある場合は表示する
+    document.getElementById("question").innerHTML = questionList[questionNo].question;
+  }else{
+    //全問終了したら、成績を発表する。
+    document.getElementById("question").innerHTML = "hoge";
+    document.getElementById("answerForm").style.display = "none";
+  }
+  createSelectList();
 }
 
 //陣営判別メソッド
