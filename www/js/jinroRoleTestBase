@@ -2,6 +2,10 @@
 var questionNo = 0;
 // 質問リスト
 var questionList = getDataFromCsv();
+// パラメータリスト
+var parameterList = getParamFromCsv();
+// パラメータステータス
+var paramStatus = initParamStatus();
 //協調性
 var kyotyoPt = 0;
 //意志力
@@ -9,48 +13,73 @@ var ishiPt = 0;
 //ポーカフェイス
 var pokerPt = 0;
 
-//CSVを読み込んで配列データとして返す
-function getDataFromCsv() {
-  var allData = [];// 読み込んだデータを1行ずつ格納する配列 
-  var request = new XMLHttpRequest();
-  request.open("get", "data/questionList.csv", false);
-  request.send(null);
+//パラメータの初期化
+function initParamStatus() {
+  var paramObj = {};
+  for (var i=0;i<parameterList.length;i++) {
+    var paramName = parameterList[i];
+    paramObj[paramName] = 0;
+  }
+  return paramObj;
+}
 
+//指定したCSVを込みこんで改行ごとデータを返す
+function getDataFromCsvBase(url) {
+  var request = new XMLHttpRequest();
+  request.open("get", url, false);
+  request.send(null);
   var csvData = request.responseText;// 読み込んだCSVデータ
   var lines = csvData.split("\n");// CSVの全行を取得(改行ごとの配列データ)
+  return lines;
+}
+
+//CSVからパラメータ一覧を取得して返す
+function getParamFromCsv() {
+  var allData = [];// 読み込んだデータを1行ずつ格納する配列 
+  var lines = getDataFromCsvBase("data/parameterList.csv");
+
+  for (var i = 1; i < lines.length; i++) {
+    //1行ごとに区切り文字ごとで配列データを取得(1行目はタイトルなのでスキップ)
+    var wordSet = lines[i].split(",");
+    for (var j = 0; j < wordSet.length; j++) {
+      allData.push(wordSet[j]);
+    }
+  }
+  return allData;
+}
+
+//CSVを読み込んで配列データとして返す
+function getDataFromCsv() {
+  var allData = [];// 読み込んだデータを格納する配列 
+  var lines = getDataFromCsvBase("data/questionList.csv");
 
   for (var i = 1; i < lines.length; i++) {
     //1行ごとに区切り文字ごとで配列データを取得(1行目はタイトルなのでスキップ)
     var wordSet = lines[i].split("|");
     //オブジェクトにデータを格納
+    //question:質問、answerList:回答、updateParamList:回答ごとのパラメータ
     var wordData = {
       question: wordSet[0],
       answerList: [wordSet[1],wordSet[2],wordSet[3]],
-      parameterList: {
-        0:{kyotyo:1,
-          ishi:1,
-          poker:1
-          },
-        1:{kyotyo:-1,
-          ishi:-1,
-          poker:-1
-          },
-        2:{kyotyo:2,
-          ishi:2,
-          poker:2
-        }
-      }
-    };
+      };
+    var objParam = {};
     //パラメータリストをCSVから変換
-    //for (var j = 4; j < 7; j++) {
-    //  var param = wordSet[j].split(",");
-    //  for (var k = 0; k < param.length;k++) {
-    //    var paramCore = param[k].split(":");
-    //    var paramKey = paramCore[0];
-    //    var paramValue = paramCore[1];
-    //    wordData.parameterList[paramKey]
-    //  }
-    //}
+    for (var j = 4; j < 7; j++) {
+      var param = wordSet[j].split(",");
+      var objParamCore = {};
+      for (var k = 0; k < param.length; k++) {
+        var paramCore = param[k].split(":");
+        var paramKey = paramCore[0];
+        var paramValue = paramCore[1];
+        //パラメータ名と値のオブジェクトを作成
+        objParamCore[paramKey] = paramValue;
+      }
+      var selectNumber = parseInt(j)-3;
+      objParam[selectNumber] = objParamCore;
+    }
+    wordData['updateParamList'] = objParam;
+    //console.log("test３");//テスト
+    //console.log(wordData);//テスト
     allData.push(wordData);//配列にオブジェクトを格納
   } 
   return allData;
@@ -72,13 +101,13 @@ function showQuestion() {
     }
     //Htmlに回答リストを埋め込む
     document.getElementById("selectAnswerForm").innerHTML = answerHtml;
-    //パラメータを表示
-    document.getElementById("parameterShow").textContent = "協調性： " + kyotyoPt + " / 意志力： " + ishiPt + " / ポーカフェイス： " + pokerPt;
   } else {
     document.getElementById("question").innerHTML = "しゅーりょー";
     document.getElementById("selectAnswerForm").style.display = "none";
     document.getElementById("answerButton").style.display = "none";
   }
+  //パラメータを表示
+    document.getElementById("parameterShow").textContent = JSON.stringify(paramStatus);
 }
 
 //パラメータにポイントを加減し、次の質問を表示する
@@ -97,22 +126,11 @@ function nextQuestion() {
 //パラメータを更新する
 function updateParameter(number) {
   //選択した回答のパラメータ加減用配列を取得
-  var parameterList = questionList[questionNo].parameterList;
-  var parameter = parameterList[parseInt(number)-1];
-  console.log(parameter);
+  var updateParamList = questionList[questionNo].updateParamList;
+  var parameter = updateParamList[parseInt(number)];
   //パラメータを加減する
-  for(var key in parameter) {
-    if(JSON.stringify(key) == "kyotyo") {
-      //協調性
-      kyotyoPt += parseInt(parameter.key);
-    } else if (JSON.stringify(key) == "ishi") {
-      //意志力
-      ishiPt += parseInt(parameter.key);
-    } else if (JSON.stringify(key) == "poker") {
-      //ポーカフェイス
-      pokerPt += parseInt(parameter.key);
-    } else {
-      console.log("CSVのパラメータが不正");
-    }
+  for(key in parameter) {
+    var newStatus = paramStatus[key] + parseInt(parameter[key]);//元のパラメータに更新分を追加
+    paramStatus[key] = newStatus;
   }
 }
