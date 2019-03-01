@@ -1,0 +1,8 @@
+#役職|計算用パラメータ|
+村人|kyotyo:1,ishi:0,poker:-1,sekinin:-1,buttle:-1,confidence:-1|
+予言|kyotyo:1,ishi:0,poker:-1,sekinin:1,buttle:0,confidence:1|
+狩人|kyotyo:1,ishi:0,poker:-1,sekinin:0,buttle:1,confidence:1|
+猫又|kyotyo:1,ishi:0,poker:-1,sekinin:0,buttle:0,confidence:1|
+人狼|kyotyo:0,ishi:-1,poker:1,sekinin:1,buttle:1,confidence:0|
+狂人|kyotyo:0,ishi:-1,poker:1,sekinin:-1,buttle:-1,confidence:-1|
+狐|kyotyo:-1,ishi:1,poker:0,sekinin:1,buttle:0,confidence:1|

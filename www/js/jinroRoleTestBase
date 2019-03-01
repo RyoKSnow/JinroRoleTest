@@ -1,79 +1,206 @@
 // 質問番号
-var no = 0;
-// 正解数
-var score = 0;
+var questionNo = 0;
 // 質問リスト
-var wordList = [
-  {
-    japanese: "質問1",
-    english: "狐"
-  },
-  {
-    japanese: "人狼を知ってる　占われたら人間",
-    english: "狂信者"
-  }
-];
-//協調性
-var kyotyoseiPt = 0;
-//意志力
-var ishiryokuPt = 0;
-//ポーカフェイス
-var porkerfacePt = 0;
+var questionList = getDataFromCsv();
+// パラメータリスト
+var parameterList = getParamFromCsv();
+// パラメータステータス
+var paramStatus = initParamStatus();
+// 役職ポイントリスト
+var jinroRolePointList = {};
 
-// 問題を表示する
-function showQuestion() {
-  if(no < wordList.length){
-    //次の問題がある場合は表示する
-    document.getElementById("question").innerHTML = wordList[no].japanese;
-  }else{
-    //全問終了したら、成績を発表する。
-    document.getElementById("question").innerHTML = score + "/" + wordList.length;
-    document.getElementById("answerForm").style.display = "none";
-    if(score == wordList.length){
-      //全問正解の場合
-      document.getElementById("resultMessage").innerHTML = "全問正解だよ～！"
-      document.getElementById("resultImage").src = "gold.png";
-    } else if(score >= wordList.length * 0.6){
-      //６割以上正解した場合
-      document.getElementById("resultMessage").innerHTML = "まぁまぁだね！"
-      document.getElementById("resultImage").src = "silver.png";
-    } else {
-      document.getElementById("resultMessage").innerHTML = "まだまだだね！";
-      document.getElementById("resultImage").src = "bronze.png";
+//パラメータの初期化
+function initParamStatus() {
+
+  if (questionNo === 0) {
+    var paramObj = {};
+    for (var i=0;i<parameterList.length;i++) {
+      var paramName = parameterList[i];
+      paramObj[paramName] = 0;
+    }
+    //ローカルストレージにステータスを保存
+    localStorage.setItem('jinroStatus', JSON.stringify(paramObj));
+    return paramObj;
+  }
+}
+
+//指定したCSVを込みこんで改行ごとデータを返す
+function getDataFromCsvBase(url) {
+  var request = new XMLHttpRequest();
+  request.open("get", url, false);
+  request.send(null);
+  var csvData = request.responseText;// 読み込んだCSVデータ
+  var lines = csvData.split("\n");// CSVの全行を取得(改行ごとの配列データ)
+  return lines;
+}
+
+//CSVからパラメータ一覧を取得して返す
+function getParamFromCsv() {
+  var allData = [];// 読み込んだデータを1行ずつ格納する配列 
+  var lines = getDataFromCsvBase("data/parameterList.csv");
+
+  for (var i = 1; i < lines.length; i++) {
+    //1行ごとに区切り文字ごとで配列データを取得(1行目はタイトルなのでスキップ)
+    var wordSet = lines[i].split(",");
+    for (var j = 0; j < wordSet.length; j++) {
+      allData.push(wordSet[j]);
     }
   }
+  return allData;
 }
 
-// 入力された回答の正誤判定を行う
-function judge() {
-  var answer = document.getElementById("answer").value;
-  if(answer == wordList[no].english){
-    alert("正解です！");
-    score++;
-  } else {
-    alert("残念！不正解です。");
+//パラメータステータスから役職を診断する
+function jinroRoleFinal() {
+  
+  //CSVから役職診断用パラメータを読み込む
+  var lines = getDataFromCsvBase("data/jinroRoleList.csv");
+
+  for (var i = 1; i < lines.length; i++) {
+    //役職ごとに計算
+    var wordSet = lines[i].split("|");
+    var param = wordSet[1].split(",");
+
+    var pointByRole = 0;//初期値
+    for (var k = 0; k < param.length; k++) {
+      //パラメータごとに計算
+      var paramCore = param[k].split(":");
+      var paramKey = paramCore[0];
+      var paramValue = paramCore[1];
+
+      //役職ポイントを計算
+      var nowParam = paramStatus[paramKey];
+      var culcPoint = parseInt(nowParam) * parseInt(paramValue);
+      pointByRole += culcPoint;
+    }
+    //役職名と役職ポイントを格納
+    jinroRolePointList[wordSet[0]] = pointByRole;
   }
-  no++;
-  showQuestion();
-  var answer = document.getElementById("answer").value = "";
 }
 
-//陣営判別メソッド
-function teamCheck(){
-  //協調性を取得
-  kyotyoseiPt = document.getElementById("kyotyoseiSelect").value;
-	//意志力を取得
-  ishiPt = document.getElementById("ishiSelect").value;
-	//ポーカーフェイスを取得
-  porkerfacePt = document.getElementById("porkerfaceSelect").value;
-	
-  //陣営判別計算
-  //村陣営計算(協調性×(2) / 意志力×(1) / ポーカフェイス×(-2))
-  var humanPt = parseInt(kyotyoseiPt)*2 + parseInt(ishiPt)*1 + parseInt(porkerfacePt)*(-2);
-  //人狼陣営計算(協調性×(1) / 意志力×(2) / ポーカフェイス×(2))
-  var jinroPt = parseInt(kyotyoseiPt)*1 + parseInt(ishiPt)*2 + parseInt(porkerfacePt)*2;
-  //狐陣営計算(協調性×(-1) / 意志力×(-1) / ポーカフェイス×(1))
-  var foxPt = parseInt(kyotyoseiPt)*(-1) + parseInt(ishiPt)*(-1) + parseInt(porkerfacePt)*(1);
+//役職ポイントリストを元に役職を決めて役職名を返す
+function defineRole() {
+  var defineRoleName = "";
+  var maxPoint = -100;//最高ポイント値
+  for(key in jinroRolePointList) {
+    if(maxPoint < jinroRolePointList[key]) {
+      //最高ポイント値を順に比較し、最高ポイントの役職名を返す
+      defineRoleName = key;
+      maxPoint = jinroRolePointList[key];
+    }
+  }
+  return defineRoleName;
+}
 
-  document.getElementById("teamShow").textContent = "村陣営Pt： " + humanPt + " / 人狼陣営Pt： " + jinroPt + " / 狐陣営Pt： " + foxPt;
+//CSVを読み込んで質問、回答、回答パラメータを配列データとして返す
+function getDataFromCsv() {
+  var allData = [];// 読み込んだデータを格納する配列 
+  var lines = getDataFromCsvBase("data/questionList.csv");
+
+  for (var i = 1; i < lines.length; i++) {
+    //1行ごとに区切り文字ごとで配列データを取得(1行目はタイトルなのでスキップ)
+    var wordSet = lines[i].split("|");
+    //オブジェクトにデータを格納
+    //question:質問、answerList:回答、updateParamList:回答ごとのパラメータ
+    var wordData = {
+      question: wordSet[0],
+      answerList: [wordSet[1],wordSet[2],wordSet[3]],
+      };
+    var objParam = {};
+    //パラメータリストをCSVから変換
+    for (var j = 4; j < 7; j++) {
+      var param = wordSet[j].split(",");
+      var objParamCore = {};
+      for (var k = 0; k < param.length; k++) {
+        var paramCore = param[k].split(":");
+        var paramKey = paramCore[0];
+        var paramValue = paramCore[1];
+        //パラメータ名と値のオブジェクトを作成
+        objParamCore[paramKey] = paramValue;
+      }
+      var selectNumber = parseInt(j)-3;
+      objParam[selectNumber] = objParamCore;
+    }
+    wordData['updateParamList'] = objParam;
+    allData.push(wordData);//配列にオブジェクトを格納
+  } 
+  return allData;
+}
+
+// 質問と回答を表示する
+function showQuestion() {
+  if(questionNo < questionList.length){
+    //次の問題がある場合は表示する
+    document.getElementById("question").innerHTML = questionList[questionNo].question;
+    answerHtml = "";//回答リスト表示用html
+    var list = questionList[questionNo].answerList;//回答リスト用配列
+    //回答リスト分繰り返し
+    for (var i=0;i < list.length;i++) {
+      var answerStr = list[i];
+      //埋め込むhtml分を作成
+      var valueNumber = i+1;
+      answerHtml += "<input type='radio' name='radio' value='" + valueNumber +"'/>" + answerStr +"<br>";
+    }
+    //Htmlに回答リストを埋め込む
+    document.getElementById("selectAnswerForm").innerHTML = answerHtml;
+    
+    if((questionNo +1) == questionList.length) {
+      //最終質問の場合、診断ボタンを表示
+      document.getElementById("answerButton").value = "診断する";
+    }
+  } else {
+    document.getElementById("question").innerHTML = "しゅーりょー";
+    document.getElementById("selectAnswerForm").style.display = "none";
+    document.getElementById("answerButton").style.display = "none";
+    //役職ポイントを計算する
+    jinroRoleFinal();
+    //役職名を取得する
+    var roleName = defineRole();
+    document.getElementById("roleNameShow").innerHTML = "あなたの適正は 【" + roleName + "】 です";
+    //パラメータを表示（テスト用）
+    var roleHtml = "<table  border='1'>";
+    for(key in jinroRolePointList) {
+      roleHtml += "<tr><td>" + key + "</td><td>" + jinroRolePointList[key] +"</td></tr>";
+    }
+    roleHtml += "</table>";
+    document.getElementById("roleListShow").innerHTML = roleHtml;
+  }
+  //パラメータを表示（テスト用）
+  //kyotyo,ishi,poker,sekinin,buttle,confidence
+  var paramHtml = "<table  border='1'><tr><td>協調性</td><td>" + paramStatus.kyotyo +"</td></tr>";
+  paramHtml += "<tr><td>意志力</td><td>" + paramStatus.ishi +"</td></tr>";
+  paramHtml += "<tr><td>ポーカフェイス</td><td>" + paramStatus.poker +"</td></tr>";
+  paramHtml += "<tr><td>責任</td><td>" + paramStatus.sekinin +"</td></tr>";
+  paramHtml += "<tr><td>勝負強さ</td><td>" + paramStatus.buttle +"</td></tr>";
+  paramHtml += "<tr><td>自信</td><td>" + paramStatus.confidence +"</td></tr></table>";
+  document.getElementById("parameterShow").innerHTML = paramHtml;
+}
+
+//パラメータにポイントを加減し、次の質問を表示する
+function nextQuestion() {
+  var selectNumber = "";//選択した番号
+  for(i=0;i<answerForm.radio.length;i++) {
+    if(answerForm.radio[i].checked == true) {
+      selectNumber = answerForm.radio[i].value;
+    }
+  }
+  if(selectNumber != "") {
+    //未選択でない場合
+    updateParameter(selectNumber);//パラメータを更新
+    questionNo++;//質問番号を次の番号へ
+  }
+  showQuestion();
+}
+
+//パラメータを更新する
+function updateParameter(number) {
+  //選択した回答のパラメータ加減用配列を取得
+  var updateParamList = questionList[questionNo].updateParamList;
+  var parameter = updateParamList[parseInt(number)];
+  //パラメータを加減する
+  for(key in parameter) {
+    var newStatus = paramStatus[key] + parseInt(parameter[key]);//元のパラメータに更新分を追加
+    paramStatus[key] = newStatus;
+  }
+  //更新後のパラメータをローカルストレージに保存
+  localStorage.setItem('jinroStatus', JSON.stringify(paramStatus));
 }

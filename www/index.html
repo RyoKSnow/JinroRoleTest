@@ -8,41 +8,17 @@
     <link rel="stylesheet" href="components/loader.css">
     <link rel="stylesheet" href="css/style.css">
     <script src="js/jinroRoleTestBase"></script>
+    <script src="js/defineJinroRole"></script>
+
 </head>
 <body onload="showQuestion()">
 	<h1 id="title">人狼役職診断</h1>
 	<div id="question"></div>
-	<div id="answerForm">
-		<input type="text" id="answer" placeholder="人狼村での答えを入力">
-		<button onclick="judge()">OK</button>
-	</div>
-  <p>協調性</p>
-	<select id="kyotyoseiSelect">
-      <option value=-2>-2</option>
-	    <option value=-1>-1</option>
-	    <option value=0>0</option>
-	    <option value=1>1</option>
-      <option value=2>2</option>
-	</select>
-  <p>意志力</p>
-	<select id="ishiSelect">
-      <option value=-2>-2</option>
-	    <option value=-1>-1</option>
-	    <option value=0>0</option>
-	    <option value=1>1</option>
-      <option value=2>2</option>
-	</select>
-  <p>ポーカフェイス</p>
-	<select id="porkerfaceSelect">
-      <option value=-2>-2</option>
-	    <option value=-1>-1</option>
-	    <option value=0>0</option>
-	    <option value=1>1</option>
-      <option value=2>2</option>
-	</select>
-<input type="button" value="送信" onclick="teamCheck()"/>
-<p id="teamShow"></p>
-	<p id="resultMessage"></p>
-	<img id="resultImage" src="">
+  <form id="selectAnswerForm" name="answerForm">
+  </form>
+  <input id="answerButton" type="button" value="回答する" onclick="nextQuestion()"><br>	
+<div align="center" id="roleNameShow"></div><br>
+<div align="center" id="roleListShow"></div><br>
+<div align="center" id="parameterShow"></div>	
 </body>
 </html>
