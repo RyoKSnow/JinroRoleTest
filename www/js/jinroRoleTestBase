@@ -11,11 +11,16 @@ var jinroRolePointList = {};
 
 //パラメータの初期化
 function initParamStatus() {
-
   if (questionNo === 0) {
     var paramObj = {};
     for (paramKey in parameterList) {
-      paramObj[paramKey] = 0;
+      if(paramKey == "default") {
+        //デフォルト値は1に初期化
+        paramObj[paramKey] = 1;
+      } else {
+        //デフォルト値以外のパラメータは0に初期化
+        paramObj[paramKey] = 0;
+      }
     }
     return paramObj;
   }
@@ -56,8 +61,6 @@ function jinroRoleFinal() {
   for (var i = 1; i < lines.length; i++) {
     //役職ごとに計算
     var wordSet = lines[i].split(",");
-    console.log("テスト1");
-    console.log(wordSet);//テスト
     var param = wordSet[1].split("|");
 
     var pointByRole = 0;//初期値
@@ -69,15 +72,12 @@ function jinroRoleFinal() {
 
       //役職ポイントを計算
       var nowParam = paramStatus[paramKey];
-      console.log("テスト2");
-      console.log(paramKey + "//" + nowParam);//テスト
-      var culcPoint = parseInt(nowParam) * parseInt(paramValue);
+      var culcPoint = parseFloat(nowParam) * parseFloat(paramValue);
       pointByRole += culcPoint;
     }
     //役職名と役職ポイントを格納
     jinroRolePointList[wordSet[0]] = pointByRole;
   }
-  console.log(jinroRolePointList);//テスト
 }
 
 //役職ポイントリストを元に役職を決めて役職名を返す
@@ -126,7 +126,7 @@ function getDataFromCsv() {
         //パラメータ名と値のオブジェクトを作成
         objParamCore[paramKey] = paramValue;
       }
-      var selectNumber = parseInt(j)-3;
+      var selectNumber = parseFloat(j)-3;
       objParam[selectNumber] = objParamCore;
     }
     wordData['updateParamList'] = objParam;
@@ -174,7 +174,6 @@ function showQuestion() {
     document.getElementById("roleListShow").innerHTML = roleHtml;
   }
   //パラメータを表示（テスト用）
-
   var paramHtml = "<table  border='1'>";
   for (paramKey in parameterList) {
     paramHtml += "<tr><td>" + parameterList[paramKey] + "</td><td>" + paramStatus[paramKey] +"</td></tr>";
@@ -203,12 +202,10 @@ function nextQuestion() {
 function updateParameter(number) {
   //選択した回答のパラメータ加減用配列を取得
   var updateParamList = questionList[questionNo].updateParamList;
-  var parameter = updateParamList[parseInt(number)];
+  var parameter = updateParamList[parseFloat(number)];
   //パラメータを加減する
   for(key in parameter) {
-    var newStatus = paramStatus[key] + parseInt(parameter[key]);//元のパラメータに更新分を追加
+    var newStatus = paramStatus[key] + parseFloat(parameter[key]);//元のパラメータに更新分を追加
     paramStatus[key] = newStatus;
   }
-  //更新後のパラメータをローカルストレージに保存
-  localStorage.setItem('jinroStatus', JSON.stringify(paramStatus));
 }

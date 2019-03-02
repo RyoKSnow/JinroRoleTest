@@ -1,8 +1,8 @@
 #役職,計算用パラメータ
-村人,kyotyo:1|ishi:0|poker:-1|sekinin:-1|buttle:-1|confidence:-1|reborn:0
-予言,kyotyo:1|ishi:0|poker:-1|sekinin:1|buttle:0|confidence:1|reborn:0
-狩人,kyotyo:1|ishi:0|poker:-1|sekinin:0|buttle:1|confidence:1|reborn:1
-猫又,kyotyo:1|ishi:0|poker:-1|sekinin:0|buttle:0|confidence:1|reborn:-1
-人狼,kyotyo:0|ishi:-1|poker:1|sekinin:1|buttle:1|confidence:0|reborn:0
-狂人,kyotyo:0|ishi:-1|poker:1|sekinin:-1|buttle:-1|confidence:-1|reborn:0
-狐,kyotyo:-1|ishi:1|poker:0|sekinin:1|buttle:0|confidence:1|reborn:0
+村人,kyotyo:1|ishi:0|poker:-1|sekinin:-1|buttle:-1|confidence:-1|reborn:0|lierPermit:0.01|default:0
+予言,kyotyo:1|ishi:0|poker:-1|sekinin:1|buttle:0|confidence:1|reborn:0|lierPermit:0|default:0.001
+狩人,kyotyo:1|ishi:0|poker:-1|sekinin:0|buttle:1|confidence:1|reborn:0.1|lierPermit:0|default:0.0001
+猫又,kyotyo:1|ishi:0|poker:-1|sekinin:0|buttle:0|confidence:1|reborn:-0.1|lierPermit:0|default:0.00001
+人狼,kyotyo:0|ishi:-1|poker:1|sekinin:1|buttle:1|confidence:0|reborn:0|lierPermit:0|default:0.000001
+狂人,kyotyo:0|ishi:-1|poker:1|sekinin:-1|buttle:-1|confidence:-1|reborn:0|lierPermit:-0.01|default:0.0000001
+狐,kyotyo:-1|ishi:1|poker:0|sekinin:1|buttle:0|confidence:1|reborn:0|lierPermit:0|default:0
