@@ -14,12 +14,9 @@ function initParamStatus() {
 
   if (questionNo === 0) {
     var paramObj = {};
-    for (var i=0;i<parameterList.length;i++) {
-      var paramName = parameterList[i];
-      paramObj[paramName] = 0;
+    for (paramKey in parameterList) {
+      paramObj[paramKey] = 0;
     }
-    //ローカルストレージにステータスを保存
-    localStorage.setItem('jinroStatus', JSON.stringify(paramObj));
     return paramObj;
   }
 }
@@ -30,23 +27,24 @@ function getDataFromCsvBase(url) {
   request.open("get", url, false);
   request.send(null);
   var csvData = request.responseText;// 読み込んだCSVデータ
-  var lines = csvData.split("\n");// CSVの全行を取得(改行ごとの配列データ)
+  var lines = csvData.split("\r\n");// CSVの全行を取得(改行ごとの配列データ)
   return lines;
 }
 
 //CSVからパラメータ一覧を取得して返す
 function getParamFromCsv() {
-  var allData = [];// 読み込んだデータを1行ずつ格納する配列 
+  var paramObj = {};
   var lines = getDataFromCsvBase("data/parameterList.csv");
 
   for (var i = 1; i < lines.length; i++) {
     //1行ごとに区切り文字ごとで配列データを取得(1行目はタイトルなのでスキップ)
     var wordSet = lines[i].split(",");
     for (var j = 0; j < wordSet.length; j++) {
-      allData.push(wordSet[j]);
+      var wordData = wordSet[j].split("|");
+      paramObj[wordData[0]] = wordData[1];
     }
   }
-  return allData;
+  return paramObj;
 }
 
 //パラメータステータスから役職を診断する
@@ -57,8 +55,10 @@ function jinroRoleFinal() {
 
   for (var i = 1; i < lines.length; i++) {
     //役職ごとに計算
-    var wordSet = lines[i].split("|");
-    var param = wordSet[1].split(",");
+    var wordSet = lines[i].split(",");
+    console.log("テスト1");
+    console.log(wordSet);//テスト
+    var param = wordSet[1].split("|");
 
     var pointByRole = 0;//初期値
     for (var k = 0; k < param.length; k++) {
@@ -69,12 +69,15 @@ function jinroRoleFinal() {
 
       //役職ポイントを計算
       var nowParam = paramStatus[paramKey];
+      console.log("テスト2");
+      console.log(paramKey + "//" + nowParam);//テスト
       var culcPoint = parseInt(nowParam) * parseInt(paramValue);
       pointByRole += culcPoint;
     }
     //役職名と役職ポイントを格納
     jinroRolePointList[wordSet[0]] = pointByRole;
   }
+  console.log(jinroRolePointList);//テスト
 }
 
 //役職ポイントリストを元に役職を決めて役職名を返す
@@ -98,17 +101,23 @@ function getDataFromCsv() {
 
   for (var i = 1; i < lines.length; i++) {
     //1行ごとに区切り文字ごとで配列データを取得(1行目はタイトルなのでスキップ)
-    var wordSet = lines[i].split("|");
+    var wordSet = lines[i].split(",");
     //オブジェクトにデータを格納
     //question:質問、answerList:回答、updateParamList:回答ごとのパラメータ
-    var wordData = {
-      question: wordSet[0],
-      answerList: [wordSet[1],wordSet[2],wordSet[3]],
-      };
+    var wordData = {};
+    if(wordSet[3] == "") {
+      //2択質問の場合
+      wordData["question"] = wordSet[0];
+      wordData["answerList"] = [wordSet[1],wordSet[2]];
+    } else {
+      //3択質問の場合
+      wordData["question"] = wordSet[0];
+      wordData["answerList"] = [wordSet[1],wordSet[2],wordSet[3]];
+    }
     var objParam = {};
     //パラメータリストをCSVから変換
-    for (var j = 4; j < 7; j++) {
-      var param = wordSet[j].split(",");
+    for (var j = 4; j < wordSet.length; j++) {
+      var param = wordSet[j].split("|");
       var objParamCore = {};
       for (var k = 0; k < param.length; k++) {
         var paramCore = param[k].split(":");
@@ -165,13 +174,12 @@ function showQuestion() {
     document.getElementById("roleListShow").innerHTML = roleHtml;
   }
   //パラメータを表示（テスト用）
-  //kyotyo,ishi,poker,sekinin,buttle,confidence
-  var paramHtml = "<table  border='1'><tr><td>協調性</td><td>" + paramStatus.kyotyo +"</td></tr>";
-  paramHtml += "<tr><td>意志力</td><td>" + paramStatus.ishi +"</td></tr>";
-  paramHtml += "<tr><td>ポーカフェイス</td><td>" + paramStatus.poker +"</td></tr>";
-  paramHtml += "<tr><td>責任</td><td>" + paramStatus.sekinin +"</td></tr>";
-  paramHtml += "<tr><td>勝負強さ</td><td>" + paramStatus.buttle +"</td></tr>";
-  paramHtml += "<tr><td>自信</td><td>" + paramStatus.confidence +"</td></tr></table>";
+
+  var paramHtml = "<table  border='1'>";
+  for (paramKey in parameterList) {
+    paramHtml += "<tr><td>" + parameterList[paramKey] + "</td><td>" + paramStatus[paramKey] +"</td></tr>";
+  }
+  paramHtml += "</table>";
   document.getElementById("parameterShow").innerHTML = paramHtml;
 }
 
