@@ -12,12 +12,11 @@ var jinroRolePointList = {};
 $(function(){
   //初期画面で呼び出す
   showQuestion();
-  $("#answerButton").click(nextQuestion);  
+  $("#answerButton").click(nextQuestion);//回答ボタン押下  
 });
 
 //パラメータの初期化
 function initParamStatus() {
-  console.log("call function initParamStatus");
   if (questionNo === 0) {
     var paramObj = {};
     for (paramKey in parameterList) {
@@ -35,33 +34,33 @@ function initParamStatus() {
 
 // 質問と回答を表示する
 function showQuestion() {
-  console.log("call function snowQuestion");
   if(questionNo < questionList.length){
     //次の問題がある場合は表示する
     $("#question").html(questionList[questionNo].question);
     var list = questionList[questionNo].answerList;//回答リスト用配列
-    var radioListHtml = '<fieldset data-role="controlgroup">';//回答リスト用html
 
+    var radioListStart = '<fieldset data-role="controlgroup">';
+    var radioListEnd = '</fieldset>';
+    var radioListHtml = "";
+    
     //回答リスト分繰り返し
     for (i = 0,iLen = list.length; i < iLen; i++) {
       var answerStr = list[i];
-      //埋め込むhtml分を作成
-      var valueNumber = i+1;
-      var checkFlg = "";
-      if(i == 0) {
-        checkFlg = "checked";
-      }      
+      var valueNumber = i+1;      
       var answerId = "answer" + questionNo + i;//回答用のidを発行
 
-      radioListHtml += '<input type="radio" name="test" id="' + answerId + '" value="' + valueNumber + '" checked="' + checkFlg + '"/>';
-      radioListHtml += '<label for="' + answerId + '">' + answerStr + '</label>';
+      if(i == 0){
+        radioListHtml += '<input type="radio" name="test" id="' + answerId + '" value="' + valueNumber + '" checked="checked"/>';
+      } else {
+        radioListHtml += '<input type="radio" name="test" id="' + answerId + '" value="' + valueNumber + '"/>';
+      }
+      radioListHtml += '<label for="' + answerId + '">' + answerStr + '</label>';  
     }
-    radioListHtml += '</fieldset>';
-    $("#selectAnswer").html(radioListHtml).trigger('create');
+    $("#selectAnswer").html(radioListStart + radioListHtml + radioListEnd).trigger('create');
        
     if((questionNo +1) == questionList.length) {
       //最終質問の場合、診断ボタンを表示
-      $("#answerButton").text("診断する");
+      $("#answerButton .ui-btn-text").text("診断する");
     }
   } else {
     $("#question").html("診断完了！");
@@ -91,7 +90,6 @@ function showQuestion() {
 
 //パラメータにポイントを加減し、次の質問を表示する
 function nextQuestion() {
-  console.log("call function nextQuestion");
   var selectNumber = $('input[name="test"]:checked').val();//選択した番号
   updateParameter(selectNumber);//パラメータを更新
   questionNo++;//質問番号を次の番号へ
@@ -100,7 +98,6 @@ function nextQuestion() {
 
 //パラメータを更新する
 function updateParameter(number) {
-  console.log("call function updateParameter");
   //選択した回答のパラメータ加減用配列を取得
   var updateParamList = questionList[questionNo].updateParamList;
   var parameter = updateParamList[parseFloat(number)];
@@ -113,7 +110,6 @@ function updateParameter(number) {
 
 //パラメータステータスから役職を診断する
 function jinroRoleFinal() {
-  console.log("call function jinroRoleFinal");
   //CSVから役職診断用パラメータを読み込む
   var lines = getDataFromCsvBase("data/jinroRoleList.csv");
 
@@ -141,7 +137,6 @@ function jinroRoleFinal() {
 
 //役職ポイントリストを元に役職を決めて役職名を返す
 function defineRole() {
-  console.log("call function defineRole");
   var defineRoleName = "";
   var maxPoint = -100;//最高ポイント値
   for(key in jinroRolePointList) {

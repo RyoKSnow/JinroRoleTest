@@ -1,6 +1,5 @@
 //CSVを読み込んで質問、回答、回答パラメータを配列データとして返す
 function getDataFromCsv() {
-  console.log("call function getDataFromCsv");
   var allData = [];// 読み込んだデータを格納する配列 
   var lines = getDataFromCsvBase("data/questionList.csv");
 
@@ -42,7 +41,6 @@ function getDataFromCsv() {
 
 //CSVからパラメータ一覧を取得して返す
 function getParamFromCsv() {
-  console.log("call function getParamFromCsv");
   var paramObj = {};
   var lines = getDataFromCsvBase("data/parameterList.csv");
 
@@ -59,7 +57,6 @@ function getParamFromCsv() {
 
 //指定したCSVを込みこんで改行ごとデータを返す
 function getDataFromCsvBase(url) {
-  console.log("call function getDataFromCsvBase");
   var request = new XMLHttpRequest();
   request.open("get", url, false);
   request.send(null);
