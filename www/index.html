@@ -7,18 +7,22 @@
     <script src="components/loader.js"></script>
     <link rel="stylesheet" href="components/loader.css">
     <link rel="stylesheet" href="css/style.css">
+    <script src="js/jinroRoleCsv"></script>
     <script src="js/jinroRoleTestBase"></script>
-    <script src="js/defineJinroRole"></script>
-
+    
 </head>
-<body onload="showQuestion()">
+<body>
 	<h1 id="title">人狼役職診断</h1>
-	<div id="question"></div>
-  <form id="selectAnswerForm" name="answerForm">
-  </form>
-  <input id="answerButton" type="button" value="回答する" onclick="nextQuestion()"><br>	
-<div align="center" id="roleNameShow"></div><br>
-<div align="center" id="roleListShow"></div><br>
-<div align="center" id="parameterShow"></div>	
+  <div data-role="content">
+		<div id="question"></div>
+    <div id="selectAnswer"></div><br>
+
+    <div class="buttonWrap">
+      <div data-role="button" data-icon="check" id="answerButton">回答する</div>	
+    </div>
+    <div align="center" id="roleNameShow"></div><br>
+    <div align="center" id="roleListShow"></div><br>
+    <div align="center" id="parameterShow"></div>
+  </div>  	
 </body>
 </html>
