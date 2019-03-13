@@ -9,8 +9,15 @@ var paramStatus = initParamStatus();
 // 役職ポイントリスト
 var jinroRolePointList = {};
 
+$(function(){
+  //初期画面で呼び出す
+  showQuestion();
+  $("#answerButton").click(nextQuestion);  
+});
+
 //パラメータの初期化
 function initParamStatus() {
+  console.log("call function initParamStatus");
   if (questionNo === 0) {
     var paramObj = {};
     for (paramKey in parameterList) {
@@ -26,45 +33,97 @@ function initParamStatus() {
   }
 }
 
-//指定したCSVを込みこんで改行ごとデータを返す
-function getDataFromCsvBase(url) {
-  var request = new XMLHttpRequest();
-  request.open("get", url, false);
-  request.send(null);
-  var csvData = request.responseText;// 読み込んだCSVデータ
-  var lines = csvData.split("\r\n");// CSVの全行を取得(改行ごとの配列データ)
-  return lines;
+// 質問と回答を表示する
+function showQuestion() {
+  console.log("call function snowQuestion");
+  if(questionNo < questionList.length){
+    //次の問題がある場合は表示する
+    $("#question").html(questionList[questionNo].question);
+    var list = questionList[questionNo].answerList;//回答リスト用配列
+    var radioListHtml = '<fieldset data-role="controlgroup">';//回答リスト用html
+
+    //回答リスト分繰り返し
+    for (i = 0,iLen = list.length; i < iLen; i++) {
+      var answerStr = list[i];
+      //埋め込むhtml分を作成
+      var valueNumber = i+1;
+      var checkFlg = "";
+      if(i == 0) {
+        checkFlg = "checked";
+      }      
+      var answerId = "answer" + questionNo + i;//回答用のidを発行
+
+      radioListHtml += '<input type="radio" name="test" id="' + answerId + '" value="' + valueNumber + '" checked="' + checkFlg + '"/>';
+      radioListHtml += '<label for="' + answerId + '">' + answerStr + '</label>';
+    }
+    radioListHtml += '</fieldset>';
+    $("#selectAnswer").html(radioListHtml).trigger('create');
+       
+    if((questionNo +1) == questionList.length) {
+      //最終質問の場合、診断ボタンを表示
+      $("#answerButton").text("診断する");
+    }
+  } else {
+    $("#question").html("診断完了！");
+    $("#selectAnswer").hide();
+    $("#answerButton").hide();
+    //役職ポイントを計算する
+    jinroRoleFinal();
+    //役職名を取得する
+    var roleName = defineRole();
+    $("#roleNameShow").html("あなたの適正は 【" + roleName + "】 です");
+    //パラメータを表示（テスト用）
+    var roleHtml = "<table  border='1'>";
+    for(key in jinroRolePointList) {
+      roleHtml += "<tr><td>" + key + "</td><td>" + jinroRolePointList[key] +"</td></tr>";
+    }
+    roleHtml += "</table>";
+    $("#roleListShow").html(roleHtml);
+  }
+  //パラメータを表示（テスト用）
+  var paramHtml = "<table  border='1'>";
+  for (paramKey in parameterList) {
+    paramHtml += "<tr><td>" + parameterList[paramKey] + "</td><td>" + paramStatus[paramKey] +"</td></tr>";
+  }
+  paramHtml += "</table>";
+  $("#parameterShow").html(paramHtml);
 }
 
-//CSVからパラメータ一覧を取得して返す
-function getParamFromCsv() {
-  var paramObj = {};
-  var lines = getDataFromCsvBase("data/parameterList.csv");
+//パラメータにポイントを加減し、次の質問を表示する
+function nextQuestion() {
+  console.log("call function nextQuestion");
+  var selectNumber = $('input[name="test"]:checked').val();//選択した番号
+  updateParameter(selectNumber);//パラメータを更新
+  questionNo++;//質問番号を次の番号へ
+  showQuestion();
+}
 
-  for (var i = 1; i < lines.length; i++) {
-    //1行ごとに区切り文字ごとで配列データを取得(1行目はタイトルなのでスキップ)
-    var wordSet = lines[i].split(",");
-    for (var j = 0; j < wordSet.length; j++) {
-      var wordData = wordSet[j].split("|");
-      paramObj[wordData[0]] = wordData[1];
-    }
+//パラメータを更新する
+function updateParameter(number) {
+  console.log("call function updateParameter");
+  //選択した回答のパラメータ加減用配列を取得
+  var updateParamList = questionList[questionNo].updateParamList;
+  var parameter = updateParamList[parseFloat(number)];
+  //パラメータを加減する
+  for(key in parameter) {
+    var newStatus = paramStatus[key] + parseFloat(parameter[key]);//元のパラメータに更新分を追加
+    paramStatus[key] = newStatus;
   }
-  return paramObj;
 }
 
 //パラメータステータスから役職を診断する
 function jinroRoleFinal() {
-  
+  console.log("call function jinroRoleFinal");
   //CSVから役職診断用パラメータを読み込む
   var lines = getDataFromCsvBase("data/jinroRoleList.csv");
 
-  for (var i = 1; i < lines.length; i++) {
+  for (i = 1,iLen = lines.length; i < iLen; i++) {
     //役職ごとに計算
     var wordSet = lines[i].split(",");
     var param = wordSet[1].split("|");
 
     var pointByRole = 0;//初期値
-    for (var k = 0; k < param.length; k++) {
+    for (k = 0,kLen = param.length; k < kLen; k++) {
       //パラメータごとに計算
       var paramCore = param[k].split(":");
       var paramKey = paramCore[0];
@@ -82,6 +141,7 @@ function jinroRoleFinal() {
 
 //役職ポイントリストを元に役職を決めて役職名を返す
 function defineRole() {
+  console.log("call function defineRole");
   var defineRoleName = "";
   var maxPoint = -100;//最高ポイント値
   for(key in jinroRolePointList) {
@@ -92,120 +152,4 @@ function defineRole() {
     }
   }
   return defineRoleName;
-}
-
-//CSVを読み込んで質問、回答、回答パラメータを配列データとして返す
-function getDataFromCsv() {
-  var allData = [];// 読み込んだデータを格納する配列 
-  var lines = getDataFromCsvBase("data/questionList.csv");
-
-  for (var i = 1; i < lines.length; i++) {
-    //1行ごとに区切り文字ごとで配列データを取得(1行目はタイトルなのでスキップ)
-    var wordSet = lines[i].split(",");
-    //オブジェクトにデータを格納
-    //question:質問、answerList:回答、updateParamList:回答ごとのパラメータ
-    var wordData = {};
-    if(wordSet[3] == "") {
-      //2択質問の場合
-      wordData["question"] = wordSet[0];
-      wordData["answerList"] = [wordSet[1],wordSet[2]];
-    } else {
-      //3択質問の場合
-      wordData["question"] = wordSet[0];
-      wordData["answerList"] = [wordSet[1],wordSet[2],wordSet[3]];
-    }
-    var objParam = {};
-    //パラメータリストをCSVから変換
-    for (var j = 4; j < wordSet.length; j++) {
-      var param = wordSet[j].split("|");
-      var objParamCore = {};
-      for (var k = 0; k < param.length; k++) {
-        var paramCore = param[k].split(":");
-        var paramKey = paramCore[0];
-        var paramValue = paramCore[1];
-        //パラメータ名と値のオブジェクトを作成
-        objParamCore[paramKey] = paramValue;
-      }
-      var selectNumber = parseFloat(j)-3;
-      objParam[selectNumber] = objParamCore;
-    }
-    wordData['updateParamList'] = objParam;
-    allData.push(wordData);//配列にオブジェクトを格納
-  } 
-  return allData;
-}
-
-// 質問と回答を表示する
-function showQuestion() {
-  if(questionNo < questionList.length){
-    //次の問題がある場合は表示する
-    document.getElementById("question").innerHTML = questionList[questionNo].question;
-    answerHtml = "";//回答リスト表示用html
-    var list = questionList[questionNo].answerList;//回答リスト用配列
-    //回答リスト分繰り返し
-    for (var i=0;i < list.length;i++) {
-      var answerStr = list[i];
-      //埋め込むhtml分を作成
-      var valueNumber = i+1;
-      answerHtml += "<input type='radio' name='radio' value='" + valueNumber +"'/>" + answerStr +"<br>";
-    }
-    //Htmlに回答リストを埋め込む
-    document.getElementById("selectAnswerForm").innerHTML = answerHtml;
-    
-    if((questionNo +1) == questionList.length) {
-      //最終質問の場合、診断ボタンを表示
-      document.getElementById("answerButton").value = "診断する";
-    }
-  } else {
-    document.getElementById("question").innerHTML = "しゅーりょー";
-    document.getElementById("selectAnswerForm").style.display = "none";
-    document.getElementById("answerButton").style.display = "none";
-    //役職ポイントを計算する
-    jinroRoleFinal();
-    //役職名を取得する
-    var roleName = defineRole();
-    document.getElementById("roleNameShow").innerHTML = "あなたの適正は 【" + roleName + "】 です";
-    //パラメータを表示（テスト用）
-    var roleHtml = "<table  border='1'>";
-    for(key in jinroRolePointList) {
-      roleHtml += "<tr><td>" + key + "</td><td>" + jinroRolePointList[key] +"</td></tr>";
-    }
-    roleHtml += "</table>";
-    document.getElementById("roleListShow").innerHTML = roleHtml;
-  }
-  //パラメータを表示（テスト用）
-  var paramHtml = "<table  border='1'>";
-  for (paramKey in parameterList) {
-    paramHtml += "<tr><td>" + parameterList[paramKey] + "</td><td>" + paramStatus[paramKey] +"</td></tr>";
-  }
-  paramHtml += "</table>";
-  document.getElementById("parameterShow").innerHTML = paramHtml;
-}
-
-//パラメータにポイントを加減し、次の質問を表示する
-function nextQuestion() {
-  var selectNumber = "";//選択した番号
-  for(i=0;i<answerForm.radio.length;i++) {
-    if(answerForm.radio[i].checked == true) {
-      selectNumber = answerForm.radio[i].value;
-    }
-  }
-  if(selectNumber != "") {
-    //未選択でない場合
-    updateParameter(selectNumber);//パラメータを更新
-    questionNo++;//質問番号を次の番号へ
-  }
-  showQuestion();
-}
-
-//パラメータを更新する
-function updateParameter(number) {
-  //選択した回答のパラメータ加減用配列を取得
-  var updateParamList = questionList[questionNo].updateParamList;
-  var parameter = updateParamList[parseFloat(number)];
-  //パラメータを加減する
-  for(key in parameter) {
-    var newStatus = paramStatus[key] + parseFloat(parameter[key]);//元のパラメータに更新分を追加
-    paramStatus[key] = newStatus;
-  }
 }
