@@ -8,6 +8,8 @@ var parameterList = getParamFromCsv();
 var paramStatus = initParamStatus();
 // 役職ポイントリスト
 var jinroRolePointList = {};
+//セッションストレージ用Key
+var rolePointKey = "rolePoint";
 
 $(function(){
   //初期画面で呼び出す
@@ -62,6 +64,9 @@ function showQuestion() {
       //最終質問の場合、診断ボタンを表示
       $("#answerButton .ui-btn-text").text("診断する");
     }
+
+    //レーダーチャートのcanvasを非表示
+    $("#chart-canvas").hide();
   } else {
     $("#question").html("診断完了！");
     $("#selectAnswer").hide();
@@ -71,6 +76,10 @@ function showQuestion() {
     //役職名を取得する
     var roleName = defineRole();
     $("#roleNameShow").html("あなたの適正は 【" + roleName + "】 です");
+
+    //レーダーチャートを表示
+    $("#chart-canvas").show();
+    makeRadarChart();
     //パラメータを表示（テスト用）
     var roleHtml = "<table  border='1'>";
     for(key in jinroRolePointList) {
@@ -133,6 +142,8 @@ function jinroRoleFinal() {
     //役職名と役職ポイントを格納
     jinroRolePointList[wordSet[0]] = pointByRole;
   }
+  //セッションストレージに役職ポイントリストをセット
+  sessionStorage.setItem(rolePointKey, JSON.stringify(jinroRolePointList));
 }
 
 //役職ポイントリストを元に役職を決めて役職名を返す
