@@ -1,0 +1,46 @@
+//セッションストレージ用Key
+var rolePointKey = "rolePoint";
+
+//レーダーチャートを作成する
+function makeRadarChart() {
+  //セッションストレージから役職ポイントリストを取得
+  var item = sessionStorage.getItem(rolePointKey);
+  var rolePointList = JSON.parse(item);
+  console.log(rolePointList);
+  var roleLabel = [];
+  var pointData = [];
+  for(key in jinroRolePointList) {
+    roleLabel.push(key);
+    pointData.push(rolePointList[key]);
+  }
+
+  //チャート用のデータを作成する
+  var chartData = {
+    //チャートの項目
+    labels: roleLabel,
+    datasets: [
+      {
+          label: "役職適正ポイント",
+          backgroundColor: "rgba(255,99,132,0.2)",      //背景色
+          borderColor: "rgba(255,99,132,1)",            //チャート線の色
+          pointBackgroundColor: "rgba(179,181,198,1)",  //チャートの点の色
+          pointBorderColor: "#fff",                     //チャートの点を囲む線の色
+          data: pointData                               //項目ごとのデータ値
+      }
+    ]
+  };
+
+  //キャンバスにチャートを描画する
+  new Chart($("#chart-canvas"), {
+    type: "radar",      //チャートタイプ
+    data: chartData,    //チャートデータをセット
+    options: {
+      scale: {
+        reverse: true,
+        ticks: {
+            beginAtZero: true
+        }
+      }
+    }
+  });
+}
