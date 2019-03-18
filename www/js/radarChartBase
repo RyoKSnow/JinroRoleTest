@@ -6,7 +6,6 @@ function makeRadarChart() {
   //セッションストレージから役職ポイントリストを取得
   var item = sessionStorage.getItem(rolePointKey);
   var rolePointList = JSON.parse(item);
-  console.log(rolePointList);
   var roleLabel = [];
   var pointData = [];
   for(key in jinroRolePointList) {

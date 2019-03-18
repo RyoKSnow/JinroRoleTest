@@ -80,21 +80,19 @@ function showQuestion() {
     //レーダーチャートを表示
     $("#chart-canvas").show();
     makeRadarChart();
-    //パラメータを表示（テスト用）
-    var roleHtml = "<table  border='1'>";
+    //役職パラメータをログに出力
+    var logRoleList = "";
     for(key in jinroRolePointList) {
-      roleHtml += "<tr><td>" + key + "</td><td>" + jinroRolePointList[key] +"</td></tr>";
+      logRoleList += key + ": " + jinroRolePointList[key] + " /";
     }
-    roleHtml += "</table>";
-    $("#roleListShow").html(roleHtml);
+    console.log(logRoleList);
   }
-  //パラメータを表示（テスト用）
-  var paramHtml = "<table  border='1'>";
+  //パラメータをログに出力
+  var logParamList = "";
   for (paramKey in parameterList) {
-    paramHtml += "<tr><td>" + parameterList[paramKey] + "</td><td>" + paramStatus[paramKey] +"</td></tr>";
+    logParamList += parameterList[paramKey] + ": " + paramStatus[paramKey] +" /";
   }
-  paramHtml += "</table>";
-  $("#parameterShow").html(paramHtml);
+  console.log(logParamList);
 }
 
 //パラメータにポイントを加減し、次の質問を表示する
