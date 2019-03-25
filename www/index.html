@@ -13,20 +13,24 @@
     
 </head>
 <body>
-	<h1 id="title">人狼役職診断</h1>
-  <div data-role="content">
-		<div id="question"></div>
-    <div id="selectAnswer"></div><br>
-
-    <div class="buttonWrap">
-      <div data-role="button" data-icon="check" id="answerButton">回答する</div>	
+  <div data-role="page">
+    <div data-role="header" data-theme="a">
+      <h1>人狼役職診断</h1>
     </div>
-    <br>
-    
-    <!-- 適正役職の表示 -->
-    <div align="center" id="roleNameShow"></div><br>
-    <!-- チャートが描画される場所-->
-    <canvas id="chart-canvas" width="200px" height="200px"></canvas>
+    <div data-role="content" data-theme="a">
+      <div id="question"></div>
+      <div id="selectAnswer"></div><br>
+      <div class="buttonWrap">
+        <img id="answerButton" src="images/answerButtonOff.png" width="100%" />	
+      </div>
+      <!-- 適正役職の表示 -->
+      <div align="center" id="roleNameShow"></div><br>
+      <!-- チャートが描画される場所-->
+      <canvas id="chart-canvas" width="100px" height="100px"></canvas>
+    </div>
+    <div data-role="footer" data-theme="a">
+      @presented by Puguuu and Yoo
+    </div>
   </div>  	
 </body>
 </html>

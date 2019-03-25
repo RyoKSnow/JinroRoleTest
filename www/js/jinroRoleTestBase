@@ -12,9 +12,19 @@ var jinroRolePointList = {};
 var rolePointKey = "rolePoint";
 
 $(function(){
-  //初期画面で呼び出す
+  //初期画面読み込み時に呼び出す処理
   showQuestion();
-  $("#answerButton").click(nextQuestion);//回答ボタン押下  
+  $("#answerButton").click(nextQuestion);//回答ボタン押下時
+
+  //回答ボタン押下時のへこみ処理
+  $("#answerButton").on('tap',function() {
+    if((questionNo +1) == questionList.length) {
+      //最終問題では診断するボタン
+     $("#answerButton").attr('src',"images/answerButtonFinalOn.png");
+    } else {
+     $("#answerButton").attr('src',"images/answerButtonOn.png");
+    }
+  })
 });
 
 //パラメータの初期化
@@ -39,6 +49,8 @@ function showQuestion() {
   if(questionNo < questionList.length){
     //次の問題がある場合は表示する
     $("#question").html(questionList[questionNo].question);
+    $("#answerButton").attr('src',"images/answerButton1.png");
+
     var list = questionList[questionNo].answerList;//回答リスト用配列
 
     var radioListStart = '<fieldset data-role="controlgroup">';
@@ -62,9 +74,8 @@ function showQuestion() {
        
     if((questionNo +1) == questionList.length) {
       //最終質問の場合、診断ボタンを表示
-      $("#answerButton .ui-btn-text").text("診断する");
+      $("#answerButton").attr('src',"images/answerButtonFinalOff.png");
     }
-
     //レーダーチャートのcanvasを非表示
     $("#chart-canvas").hide();
   } else {
